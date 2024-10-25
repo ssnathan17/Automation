@@ -84,7 +84,7 @@ echo "JIRA ticket created: $JIRA_TICKET" | tee -a $TRAC_LOG
 
 # Upload inactive user file to JIRA ticket
 echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
-curl -s -X POST -H "Authorization: Bearer $JIRA_TOKEN" -H "X-Atlassian-Token: no-check" \
+curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
     -F "file=@$INACTIVE_USER_FILE" \
     "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
@@ -112,7 +112,7 @@ echo "Changes committed and pushed to branch $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Upload deleted users log to JIRA ticket
 echo "Uploading deleted user log to JIRA..." | tee -a $TRAC_LOG
-curl -s -X POST -H "Authorization: Bearer $JIRA_TOKEN" -H "X-Atlassian-Token: no-check" \
+curl -s -X POST -H "Authorization: Bearer $JIRA_TOKEN"  \
     -F "file=@$DELETE_LOG" \
     "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
