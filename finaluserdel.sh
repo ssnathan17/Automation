@@ -1,13 +1,10 @@
 #!/bin/bash
-
-
-******
 # Define variables for file paths and directories
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"
 CURRENT_FILE="current.out"
-ACTIVE_USERS="active_users.txt"
-INACTIVE_USERS="inactive-users.txt"
-EXCLUSION_LIST="exclusion.excl"
+ACTIVE_USER_FILE="active_users.txt"
+INACTIVE_USER_FILE="inactive-users.txt"
+EXCLUSION_FILE="exclusion.excl"
 TRACE_LOG="tracelog.log"
 DELETE_LOG="deletion.log"
 GIT_REPO_PATH="/home/senthil/repo/Automation"
@@ -17,7 +14,7 @@ JIRA_API_URL="https://lapog17.atlassian.net"
 JIRA_USERNAME="lapog17@yahoo.com"
 JIRA_API_TOKEN="ATATT3xFfGF0IZZKbb_DFIckukbfEaUCUOy0CT-JhMln3etrx6wEP06v9YIYq2BX1ZqhklYOTjMdPa_2vJlSo27iQTtOd7_Zx0kR822auuu-kuk09Pi74uoFQI1SismZKwXhuCVz3X8k_Bi_t93HF6a13VYkFUM4XN_dnNGJAkG1v7Gt5vlm8Uo=235B8F8A"
 JIRA_PROJECT="SEN"
-***********************
+
 
 # Define variables
 #CONFIG_DIR="/path/to/config"
