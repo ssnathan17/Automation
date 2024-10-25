@@ -3,8 +3,8 @@
 # Define variables
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"
 CURRENT_FILE="current.out"
-ACTIVE_USER_FILE="active_users.txt"
-INACTIVE_USER_FILE="inactive-users.txt"
+ACTIVE_USERS_FILE="active_users.txt"
+INACTIVE_USERS_FILE="inactive-users.txt"
 EXCLUSION_FILE="exclusion.excl"
 TRACE_LOG="tracelog.log"
 DELETE_LOG="deleted_users.log"
@@ -15,17 +15,28 @@ JIRA_PROJECT_KEY="SEN"
 JIRA_API_TOKEN="ATATT3xFfGF0IZZKbb_DFIckukbfEaUCUOy0CT-JhMln3etrx6wEP06v9YIYq2BX1ZqhklYOTjMdPa_2vJlSo27iQTtOd7_Zx0kR822auuu-kuk09Pi74uoFQI1SismZKwXhuCVz3X8k_Bi_t93HF6a13VYkFUM4XN_dnNGJAkG1v7Gt5vlm8Uo=235B8F8A"
 
 
+# Step 1: Capture @yahoo.com users from YAML files
+echo "Capturing users ending with @yahoo.com..." | tee -a "$TRACE_LOG"
+find "$CONFIG_DIR" -name "*.yaml" -type f | while read yaml_file; do
+  grep -ioP '\S+@yahoo\.com' "$yaml_file" >> temp_users.out
+done
 
-# Step 1: Scan YAML files for @yahoo.com emails and create `current.out` file
-echo "Scanning YAML files for @yahoo.com users..." | tee -a "$TRACE_LOG"
-grep -rhPo '[\w\.-]+@yahoo\.com' "$CONFIG_DIR"/*.yaml | sort -u | sed 's/@yahoo\.com//' > "$CURRENT_FILE"
+# Step 2: Remove duplicate users
+echo "Removing duplicate usernames..." | tee -a "$TRACE_LOG"
+sort -u temp_users.out > "$CURRENT_FILE"
+rm temp_users.out
 
-# Step 2: Compare current.out with active-users list to get inactive users
-echo "Identifying inactive users..." | tee -a "$TRACE_LOG"
-grep -Fxiv -f "$ACTIVE_USER_FILE" "$CURRENT_FILE" | grep -Fxiv -f "$EXCLUSION_FILE" > "$INACTIVE_USER_FILE"
+# Step 3: Compare current users with active users
+echo "Comparing with active user list..." | tee -a "$TRACE_LOG"
+grep -Fvxi -f "$ACTIVE_USERS_FILE" "$CURRENT_FILE" > "$INACTIVE_USERS_FILE"
+
+# Step 4: Filter inactive users from exclusion list
+echo "Filtering inactive users from the exclusion list..." | tee -a "$TRACE_LOG"
+grep -Fvxi -f "$EXCLUSION_FILE" "$INACTIVE_USERS_FILE" > filtered_inactive_users.out
+mv filtered_inactive_users.out "$INACTIVE_USERS_FILE"
 
 # Check if there are inactive users
-if [ ! -s "$INACTIVE_USER_FILE" ]; then
+if [ ! -s "$INACTIVE_USERS_FILE" ]; then
     echo "No inactive users found." | tee -a "$TRACE_LOG"
     exit 0
 fi
@@ -38,7 +49,7 @@ TICKET_NUMBER=$(echo "$TICKET_RESPONSE" | jq -r '.key')
 
 # Upload inactive user file to JIRA ticket
 echo "Uploading inactive user list to JIRA ticket..." | tee -a "$TRACE_LOG"
-curl -s -X POST -H "Authorization: Bearer $JIRA_API_TOKEN" -H "X-Atlassian-Token: no-check" -F "file=@$INACTIVE_USER_FILE" "$JIRA_API_URL/$TICKET_NUMBER/attachments"
+curl -s -X POST -H "Authorization: Bearer $JIRA_API_TOKEN" -H "X-Atlassian-Token: no-check" -F "file=@$INACTIVE_USERS_FILE" "$JIRA_API_URL/$TICKET_NUMBER/attachments"
 
 
 # Step 4: Create Git branch named after JIRA ticket number
@@ -51,7 +62,7 @@ echo "Deleting inactive users from YAML files..." | tee -a "$TRACE_LOG"
 while IFS= read -r user; do
     grep -rl "$user@yahoo.com" "$CONFIG_DIR"/*.yaml | xargs sed -i "/$user@yahoo.com/d"
     echo "Deleted $user@yahoo.com" | tee -a "$DELETE_LOG"
-done < "$INACTIVE_USER_FILE"
+done < "$INACTIVE_USERS_FILE"
 
 # Step 6: Commit and push changes to Git
 echo "Committing and pushing changes to Git..." | tee -a "$TRACE_LOG"
