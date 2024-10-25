@@ -1,0 +1,11 @@
+Processing user: 
+User  is excluded from deletion.
+Processing user: info@yahoo.com
+User info@yahoo.com is excluded from deletion.
+Processing user: Case@yahoo.com
+Deleted line from /home/senthil/shell/a/config.exc
+Deleted line from /home/senthil/shell/b/config.exc
+Processing user: out@yahoo.com
+Deleted line from /home/senthil/shell/a/config.exc
+Deleted line from /home/senthil/shell/b/config.exc
+User deletion process completed.
