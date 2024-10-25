@@ -1,5 +1,8 @@
 #!/bin/bash
 
+JIRA_API_TOKEN=$(< /home/senthil/security/.jira_credentials)
+ 
+
 # Define variables
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"
 CURRENT_FILE="current.out"
@@ -12,8 +15,11 @@ GIT_REPO_PATH="/home/senthil/repo/Automation"
 # Jira Variables
 JIRA_API_URL="https://lapog17.atlassian.net/rest/api/2/issue"
 JIRA_PROJECT_KEY="SEN"
-JIRA_API_TOKEN="ATATT3xFfGF0IZZKbb_DFIckukbfEaUCUOy0CT-JhMln3etrx6wEP06v9YIYq2BX1ZqhklYOTjMdPa_2vJlSo27iQTtOd7_Zx0kR822auuu-kuk09Pi74uoFQI1SismZKwXhuCVz3X8k_Bi_t93HF6a13VYkFUM4XN_dnNGJAkG1v7Gt5vlm8Uo=235B8F8A"
 
+if [ -z "$JIRA_API_TOKEN" ]; then
+  echo "JIRA API token not found. Please ensure /home/senthil/security/.jira_credentials file exists and contains the token."
+  exit 1
+fi
 
 # Step 1: Capture @yahoo.com users from YAML files
 echo "Capturing users ending with @yahoo.com..." | tee -a "$TRACE_LOG"
