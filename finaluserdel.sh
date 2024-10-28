@@ -84,11 +84,17 @@ if [ "$JIRA_TICKET" == "null" ]; then
 fi
 echo "JIRA ticket created: $JIRA_TICKET" | tee -a $TRAC_LOG
 
+ATTACHMENT_RESPONSE=$(curl -s -u "$USERNAME:$API_TOKEN" \
+  -X POST \
+  -H "X-Atlassian-Token: no-check" \
+  -F "file=@$INACTIVE_USER_FILE" \
+  "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments")
+
 # Upload inactive user file to JIRA ticket
-echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
-curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
-    -F "file=@$INACTIVE_USER_FILE" \
-    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
+#echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
+#curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
+ #   -F "file=@$INACTIVE_USER_FILE" \
+#    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
 # Step 4: Git operations
 cd /home/senthil/repo/Automation || exit
