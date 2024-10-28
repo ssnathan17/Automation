@@ -6,7 +6,7 @@ CURRENT_FILE="current.out"               # File to store current yahoo.com users
 ACTIVE_USER_FILE="active_users.txt"      # Path to the active users report
 INACTIVE_USER_FILE="inactive_users.txt"  # File to store inactive users
 EXCLUSION_LIST="exclusion.excl"      # List of users to exclude from deletion
-TRAC_LOG="tracelog.log"                  # Log file to trace all activities
+TRAC_LOG="trace.log"                  # Log file to trace all activities
 DELETE_LOG="deleted_users.log"           # Log file to list deleted users
 JIRA_API_TOKEN="/home/senthil/security/.jira_credentials" # Path to secure JIRA API token file
 JIRA_PROJECT="SEN"         # JIRA project key or ID
@@ -90,11 +90,6 @@ ATTACHMENT_RESPONSE=$(curl -s -u "$USERNAME:$API_TOKEN" \
   -F "file=@$INACTIVE_USER_FILE" \
   "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments")
 
-# Upload inactive user file to JIRA ticket
-#echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
-#curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
- #   -F "file=@$INACTIVE_USER_FILE" \
-#    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
 # Step 4: Git operations
 cd /home/senthil/repo/Automation || exit
@@ -104,12 +99,14 @@ echo "Created new Git branch: $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Step 5: Delete inactive users from YAML files
 echo "Deleting inactive users from YAML files..." | tee -a $TRAC_LOG
+
 while IFS= read -r user; do
     if ! grep -iqF "$user" "$EXCLUSION_LIST"; then
         find "$CONFIG_DIR" -type f -name "*.yaml" -exec sed -i "/$user@/Id" {} +
         echo "$user deleted from YAML files" | tee -a "$DELETE_LOG"
     fi
 done < "$INACTIVE_USER_FILE"
+
 
 # Step 6: Git commit and push changes
 echo "Committing and pushing changes to Git..." | tee -a $TRAC_LOG
