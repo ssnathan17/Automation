@@ -1,21 +1,22 @@
 #!/bin/bash
-# variables
+
+# Configuration variables
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"             # Path to config directory containing YAML files
 CURRENT_FILE="current.out"               # File to store current yahoo.com users
 ACTIVE_USER_FILE="active_users.txt"      # Path to the active users report
-INACTIVE_USER_FILE="inactive_users.txt"  # File to store inactive users
+INACTIVE_USER_FILE="inactive-users.txt"  # File to store inactive users
 EXCLUSION_LIST="exclusion.excl"      # List of users to exclude from deletion
 TRAC_LOG="tracelog.log"                  # Log file to trace all activities
-DELETE_LOG="deleted_users.log"           # Log file to list deleted users
+DELETE_LOG="deleted-users.log"           # Log file to list deleted users
 JIRA_API_TOKEN="/home/senthil/security/.jira_credentials" # Path to secure JIRA API token file
 JIRA_PROJECT="SEN"         # JIRA project key or ID
 GIT_REPO_PATH="/home/senthil/repo/Automation"
+# Variables
 JIRA_URL="https://lapog17.atlassian.net/rest/api/2/issue/"
 USERNAME="lapog17@yahoo.com"  # Your Jira username
 PROJECT_KEY="SEN"                   # Your Jira project key
-SUMMARY="User management - Automation"
-#DESCRIPTION="This is a sample description with logs:\n$LOG_CONTENT"
-DESCRIPTION="Automation User management: Delete Users" 
+SUMMARY="Automation"
+DESCRIPTION="This is a sample description with logs:\n$LOG_CONTENT"
 LOG_CONTENT="Log entry 1\nLog entry 2\nLog entry 3"  # Your log content goes here
 
 # Create the JSON payload
@@ -35,12 +36,10 @@ PAYLOAD=$(jq -n --arg proj "$PROJECT_KEY" \
 # Load the JIRA API token securely
 API_TOKEN=$(cat $JIRA_API_TOKEN)
 
-# echo "Pulling git repo" | tee -a "$TRACE_LOG"
+echo "Pulling git repo" | tee -a "$TRACE_LOG"
 cd "$GIT_REPO_PATH"
-git switch senthil
 git pull
 
-sleep 10
 
 # Step 1: Capture @yahoo.com users from YAML files
 echo "Capturing users ending with @yahoo.com..." | tee -a "$TRAC_LOG"
@@ -83,17 +82,11 @@ if [ "$JIRA_TICKET" == "null" ]; then
 fi
 echo "JIRA ticket created: $JIRA_TICKET" | tee -a $TRAC_LOG
 
-ATTACHMENT_RESPONSE=$(curl -s -u "$USERNAME:$API_TOKEN" \
-  -X POST \
-  -H "X-Atlassian-Token: no-check" \
-  -F "file=@$INACTIVE_USER_FILE" \
-  "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments")
-
 # Upload inactive user file to JIRA ticket
-#echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
-#curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
- #   -F "file=@$INACTIVE_USER_FILE" \
-#    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
+echo "Uploading inactive user list to JIRA..." | tee -a $TRAC_LOG
+curl -s  -u "$USERNAME:$API_TOKEN" -X POST \
+    -F "file=@$INACTIVE_USER_FILE" \
+    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
 # Step 4: Git operations
 cd /home/senthil/repo/Automation || exit
@@ -102,31 +95,25 @@ git checkout -b "$BRANCH_NAME"
 echo "Created new Git branch: $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Step 5: Delete inactive users from YAML files
-
-echo "Deleting inactive users from YAML files..." | tee -a "$TRAC_LOG"
-while read user; do
-  find "$CONFIG_DIR" -name "*.yaml" -type f | while read yaml_file; do
-    if grep -iq "$user" "$yaml_file"; then
-      echo "$DATE Deleting $user from $yaml_file" | tee -a "$TRAC_LOG" "$DELETE_LOG"
-      sed -i "/$user/d" "$yaml_file"
+echo "Deleting inactive users from YAML files..." | tee -a $TRAC_LOG
+while IFS= read -r user; do
+    if ! grep -iqF "$user" "$EXCLUSION_LIST"; then
+        find "$CONFIG_DIR" -type f -name "*.yaml" -exec sed -i "/$user@/Id" {} +
+        echo "$user deleted from YAML files" | tee -a "$DELETE_LOG"
     fi
-  done
 done < "$INACTIVE_USER_FILE"
-
 
 # Step 6: Git commit and push changes
 echo "Committing and pushing changes to Git..." | tee -a $TRAC_LOG
 git add .
-git commit -am "$JIRA_TICKET: In-active user deletion Automation"
-git push -u origin "$BRANCH_NAME"
+git commit -m "$JIRA_TICKET: In-active user deletion Automation"
+git push origin "$BRANCH_NAME"
 echo "Changes committed and pushed to branch $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Upload deleted users log to JIRA ticket
 echo "Uploading deleted user log to JIRA..." | tee -a $TRAC_LOG
-DELETE_RESPONSE=$(curl -s -u "$USERNAME:$API_TOKEN" \
-  -X POST \
-  -H "X-Atlassian-Token: no-check" \
-  -F "file=@$DELETE_LOG" \
-  "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments")
+curl -s -X POST -H "Authorization: Bearer $JIRA_TOKEN"  \
+    -F "file=@$DELETE_LOG" \
+    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
 
 echo "User deletion automation completed." | tee -a $TRAC_LOG
