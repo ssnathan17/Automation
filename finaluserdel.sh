@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # variables
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"             # Path to config directory containing YAML files
 CURRENT_FILE="current.out"               # File to store current yahoo.com users
@@ -36,7 +35,7 @@ PAYLOAD=$(jq -n --arg proj "$PROJECT_KEY" \
 # Load the JIRA API token securely
 API_TOKEN=$(cat $JIRA_API_TOKEN)
 
-echo "Pulling git repo" | tee -a "$TRACE_LOG"
+# echo "Pulling git repo" | tee -a "$TRACE_LOG"
 cd "$GIT_REPO_PATH"
 git switch senthil
 git pull
@@ -112,7 +111,7 @@ while read user; do
       sed -i "/$user/d" "$yaml_file"
     fi
   done
-done < "$INACTIVE_USERS_FILE"
+done < "$INACTIVE_USER_FILE"
 
 
 # Step 6: Git commit and push changes
@@ -124,8 +123,10 @@ echo "Changes committed and pushed to branch $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Upload deleted users log to JIRA ticket
 echo "Uploading deleted user log to JIRA..." | tee -a $TRAC_LOG
-curl -s -X POST -H "Authorization: Bearer $JIRA_TOKEN"  \
-    -F "file=@$DELETE_LOG" \
-    "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments"
+DELETE_RESPONSE=$(curl -s -u "$USERNAME:$API_TOKEN" \
+  -X POST \
+  -H "X-Atlassian-Token: no-check" \
+  -F "file=@$DELETE_LOG" \
+  "https://lapog17.atlassian.net/rest/api/2/issue/$JIRA_TICKET/attachments")
 
 echo "User deletion automation completed." | tee -a $TRAC_LOG
