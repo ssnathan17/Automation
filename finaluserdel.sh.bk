@@ -1,22 +1,22 @@
 #!/bin/bash
 
-# variables
+# Configuration variables
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"             # Path to config directory containing YAML files
 CURRENT_FILE="current.out"               # File to store current yahoo.com users
 ACTIVE_USER_FILE="active_users.txt"      # Path to the active users report
-INACTIVE_USER_FILE="inactive_users.txt"  # File to store inactive users
+INACTIVE_USER_FILE="inactive-users.txt"  # File to store inactive users
 EXCLUSION_LIST="exclusion.excl"      # List of users to exclude from deletion
 TRAC_LOG="tracelog.log"                  # Log file to trace all activities
-DELETE_LOG="deleted_users.log"           # Log file to list deleted users
+DELETE_LOG="deleted-users.log"           # Log file to list deleted users
 JIRA_API_TOKEN="/home/senthil/security/.jira_credentials" # Path to secure JIRA API token file
 JIRA_PROJECT="SEN"         # JIRA project key or ID
 GIT_REPO_PATH="/home/senthil/repo/Automation"
+# Variables
 JIRA_URL="https://lapog17.atlassian.net/rest/api/2/issue/"
 USERNAME="lapog17@yahoo.com"  # Your Jira username
 PROJECT_KEY="SEN"                   # Your Jira project key
-SUMMARY="User management - Automation"
-#DESCRIPTION="This is a sample description with logs:\n$LOG_CONTENT"
-DESCRIPTION="Automation User management: Delete Users" 
+SUMMARY="Automation"
+DESCRIPTION="This is a sample description with logs:\n$LOG_CONTENT"
 LOG_CONTENT="Log entry 1\nLog entry 2\nLog entry 3"  # Your log content goes here
 
 # Create the JSON payload
@@ -38,10 +38,8 @@ API_TOKEN=$(cat $JIRA_API_TOKEN)
 
 echo "Pulling git repo" | tee -a "$TRACE_LOG"
 cd "$GIT_REPO_PATH"
-git switch senthil
 git pull
 
-sleep 10
 
 # Step 1: Capture @yahoo.com users from YAML files
 echo "Capturing users ending with @yahoo.com..." | tee -a "$TRAC_LOG"
@@ -108,8 +106,8 @@ done < "$INACTIVE_USER_FILE"
 # Step 6: Git commit and push changes
 echo "Committing and pushing changes to Git..." | tee -a $TRAC_LOG
 git add .
-git commit -am "$JIRA_TICKET: In-active user deletion Automation"
-git push -u origin "$BRANCH_NAME"
+git commit -m "$JIRA_TICKET: In-active user deletion Automation"
+git push origin "$BRANCH_NAME"
 echo "Changes committed and pushed to branch $BRANCH_NAME" | tee -a $TRAC_LOG
 
 # Upload deleted users log to JIRA ticket
