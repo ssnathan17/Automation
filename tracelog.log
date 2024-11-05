@@ -96,3 +96,21 @@ Deleting in-active users from YAML files
  Deleting Shiva@yahoo.com from /home/senthil/repo/Automation/myuser/aws_user.yaml
  Deleting Shiva@yahoo.com from /home/senthil/repo/Automation/myuser/gcp_user.yaml
 Committing and pushing changes to Git...
+Changes committed and pushed to branch SEN-22
+Uploading deleted user log to JIRA...
+User deletion automation completed.
+Automation Script started '2024-11-05_14:59:45'
+Pulling git repo
+Already up to date.
+Capturing users ending with @yahoo.com
+Removing duplicate usernames
+Comparing with active user list
+Filtering inactive users from the exclusion list
+Inactive users identified in inactive_users.txt
+Creating JIRA ticket
+JIRA ticket created: SEN-23
+Created new Git branch: SEN-23
+Deleting in-active users from YAML files
+ Deleting shiva@yahoo.com from /home/senthil/repo/Automation/myuser/aws_user.yaml
+ Deleting shiva@yahoo.com from /home/senthil/repo/Automation/myuser/gcp_user.yaml
+Committing and pushing changes to Git...
