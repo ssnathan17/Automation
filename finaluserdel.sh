@@ -38,7 +38,7 @@ API_TOKEN=$(cat $JIRA_API_TOKEN)
 
 
 # Step 2: Pull the latest changes from Git Repository
-echo "Automation Script started $DATETIME" | tee -a "$TRACE_LOG"
+echo "Automation Script started '$DATETIME'" | tee -a "$TRACE_LOG"
 echo "Pulling git repo" | tee -a "$TRACE_LOG"
 cd "$GIT_REPO_PATH"
 git switch senthil
