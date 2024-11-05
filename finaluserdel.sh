@@ -1,11 +1,12 @@
 #!/bin/bash
 # variables
+DATETIME=$(date +%Y-%m-%d_%H:%M:%S)
 CONFIG_DIR="/home/senthil/repo/Automation/myuser"             # Path to config directory containing YAML files
 CURRENT_FILE="current.out"               # File to store current yahoo.com users
 ACTIVE_USER_FILE="active_users.txt"      # Path to the active users report
 INACTIVE_USER_FILE="inactive_users.txt"  # File to store in-active users
 EXCLUSION_LIST="exclusion.excl"      # List of users to exclude from deletion
-TRACE_LOG="tracelog.log"                  # Log file to trace all activities
+TRACE_LOG="tracelog_$DATETIME.log"                  # Log file to trace all activities
 DELETE_LOG="deleted_users.log"           # Log file to list deleted users
 JIRA_API_TOKEN="/home/senthil/security/.jira_credentials" # Path to secure JIRA API token file
 JIRA_PROJECT="SEN"         # JIRA project key or ID
